@@ -31,11 +31,12 @@ import {
   CheckCircle as PaidIcon,
   Schedule as PendingIcon,
   Cancel as OverdueIcon,
+  NoteAdd as NoteAddIcon,
 } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { billingService, patientService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { generateInvoicePDF } from '../services/pdfServiceSimple';
+import { generateInvoicePDF, generateCreditNotePDF } from '../services/pdfServiceSimple';
 
 const InvoiceDetailPage = () => {
   const { id } = useParams();
@@ -103,6 +104,34 @@ const InvoiceDetailPage = () => {
       };
 
       const result = generateInvoicePDF(invoiceData, patient);
+      if (result.success) {
+        console.log('PDF generato con successo:', result.fileName);
+      }
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      setError('Errore nel download del PDF');
+    }
+    handleMenuClose();
+  };
+
+  const handleCreditNoteDownloadPDF = async () => {
+    try {
+      if (!patient) {
+        setError('Dati paziente non disponibili per la generazione PDF');
+        return;
+      }
+
+      // Convert invoice data to the format expected by generateCreditNotePDF
+      const invoiceData = {
+        ...invoice,
+        description: invoice.description,
+        amount: invoice.amount,
+        payment_method: invoice.payment_method,
+        issue_date: invoice.issue_date,
+        invoice_number:invoice.invoice_number,
+      };
+
+      const result = generateCreditNotePDF(invoiceData, patient);
       if (result.success) {
         console.log('PDF generato con successo:', result.fileName);
       }
@@ -336,6 +365,10 @@ const InvoiceDetailPage = () => {
         <MenuItem onClick={handleDownloadPDF}>
           <DownloadIcon sx={{ mr: 1 }} />
           Scarica PDF
+        </MenuItem>
+        <MenuItem onClick={handleCreditNoteDownloadPDF}>
+          <NoteAddIcon sx={{ mr: 1 }} />
+          Emetti nota di credito
         </MenuItem>
       </Menu>
     </Container>

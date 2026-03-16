@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { format } from "date-fns";
 import {
   Box,
   Card,
@@ -224,10 +225,8 @@ const PatientFormPage = () => {
 
       if (birthDate > today) {
         newErrors.data_nascita = "La data di nascita non può essere nel futuro";
-      } else if (age < 16) {
-        newErrors.data_nascita = "Il paziente deve avere almeno 16 anni";
-      } else if (age > 80) {
-        newErrors.data_nascita = "Il paziente non può avere più di 80 anni";
+      } else if (age > 200) {
+        newErrors.data_nascita = "Il paziente non può avere più di 200 anni";
       }
     }
 
@@ -254,9 +253,9 @@ const PatientFormPage = () => {
           ...formData,
           // Convert empty codice_fiscale to null
           codice_fiscale: formData.codice_fiscale?.trim() || null,
-          // Convert Date object to YYYY-MM-DD format for API
+          // Convert Date object to YYYY-MM-DD format for API (using local timezone to avoid date shift)
           data_nascita: formData.data_nascita
-            ? formData.data_nascita.toISOString().split("T")[0]
+            ? format(formData.data_nascita, "yyyy-MM-dd")
             : null,
         };
 
@@ -548,28 +547,28 @@ const PatientFormPage = () => {
                   }}
                   maxDate={
                     new Date(
-                      new Date().setFullYear(new Date().getFullYear() - 16)
+                      new Date().setFullYear(new Date().getFullYear())
                     )
                   } // Massimo 16 anni fa
                   minDate={
                     new Date(
-                      new Date().setFullYear(new Date().getFullYear() - 80)
+                      new Date().setFullYear(new Date().getFullYear() - 200)
                     )
                   } // Massimo 80 anni fa
-                  shouldDisableDate={(date) => {
-                    const today = new Date();
-                    const age = Math.floor(
-                      (today - date) / (1000 * 60 * 60 * 24 * 365.25)
-                    );
-                    return age < 16 || age > 80;
-                  }}
+                  // shouldDisableDate={(date) => {
+                  //   const today = new Date();
+                  //   const age = Math.floor(
+                  //     (today - date) / (1000 * 60 * 60 * 24 * 365.25)
+                  //   );
+                  //   return age < 16 || age > 80;
+                  // }}
                   slotProps={{
                     textField: {
                       fullWidth: true,
                       variant: "outlined",
                       error: !!errors.data_nascita,
                       helperText:
-                        errors.data_nascita || "Età consentita: 16-80 anni",
+                        errors.data_nascita || "",
                       required: true,
                     },
                   }}

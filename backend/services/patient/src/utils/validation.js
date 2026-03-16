@@ -104,8 +104,6 @@ class PatientValidationUtils {
         errors.push('Formato data non valido');
       } else if (birthDate > today) {
         errors.push('La data di nascita non può essere nel futuro');
-      } else if (birthDate < new Date('1900-01-01')) {
-        errors.push('La data di nascita non può essere precedente al 1900');
       }
     }
     

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Invoice = require('../models/Invoice');
+const CreditNote = require('../models/CreditNote');
 const { verifyToken, requireBillingAccess } = require('../middleware/auth');
 const { validate, createInvoiceSchema, updateInvoiceStatusSchema, invoiceFiltersSchema } = require('../middleware/validation');
 const { generateInvoicePDF } = require('../utils/pdfGenerator');
@@ -309,6 +310,47 @@ router.put('/invoices/overdue', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Error updating overdue invoices'
+    });
+  }
+});
+
+// POST /billing/invoices/:id/credit-notes - Get or create credit note
+router.post('/invoices/:id/credit-notes', async (req, res) => {
+  try {
+    const invoiceId = req.params.id;
+
+    // Check if credit note already exists (includes invoice data)
+    const existing = await CreditNote.findByInvoiceId(invoiceId);
+
+    if (existing) {
+      return res.status(200).json({
+        success: true,
+        ...existing
+      });
+    }
+
+    // Credit note doesn't exist, create it
+    const creditNote = await CreditNote.create(invoiceId, req.user.id);
+    const invoice = await Invoice.findById(invoiceId);
+
+    return res.status(201).json({
+      success: true,
+      credit_note: creditNote,
+      invoice: invoice
+    });
+  } catch (error) {
+    console.error('Error creating credit note:', error);
+
+    if (error.message.includes('Fattura non trovata')) {
+      return res.status(404).json({
+        success: false,
+        error: 'Fattura non trovata'
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      error: 'Errore nella creazione della nota di credito'
     });
   }
 });

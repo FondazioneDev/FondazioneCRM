@@ -114,32 +114,28 @@ const InvoiceDetailPage = () => {
     handleMenuClose();
   };
 
-  const handleCreditNoteDownloadPDF = async () => {
+  const handleFindOrCreateCreditNote = async () => {
     try {
+      setLoading(true);
+
       if (!patient) {
         setError('Dati paziente non disponibili per la generazione PDF');
         return;
       }
 
-      // Convert invoice data to the format expected by generateCreditNotePDF
-      const invoiceData = {
-        ...invoice,
-        description: invoice.description,
-        amount: invoice.amount,
-        payment_method: invoice.payment_method,
-        issue_date: invoice.issue_date,
-        invoice_number:invoice.invoice_number,
-      };
+      const response = await billingService.createCreditNote(invoice.id);
 
-      const result = generateCreditNotePDF(invoiceData, patient);
+      const result = generateCreditNotePDF(response.credit_note, response.invoice, patient);
       if (result.success) {
         console.log('PDF generato con successo:', result.fileName);
       }
+
     } catch (error) {
-      console.error('Error downloading PDF:', error);
-      setError('Errore nel download del PDF');
+      console.error("Error creating invoice:", error);
+      console.error("Error response:", error.response?.data);
+    } finally {
+      setLoading(false);
     }
-    handleMenuClose();
   };
 
   const getStatusColor = (status) => {
@@ -366,7 +362,7 @@ const InvoiceDetailPage = () => {
           <DownloadIcon sx={{ mr: 1 }} />
           Scarica PDF
         </MenuItem>
-        <MenuItem onClick={handleCreditNoteDownloadPDF}>
+        <MenuItem onClick={handleFindOrCreateCreditNote}>
           <NoteAddIcon sx={{ mr: 1 }} />
           Emetti nota di credito
         </MenuItem>

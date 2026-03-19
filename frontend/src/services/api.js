@@ -535,6 +535,11 @@ export const billingService = {
     return response.data;
   },
 
+  createCreditNote: async (invoiceId) => {
+    const response = await billingApi.post(`/billing/invoices/${invoiceId}/credit-notes`);
+    return response.data;
+  },
+
   updateInvoice: async (id, invoiceData) => {
     const response = await billingApi.put(
       `/billing/invoices/${id}`,

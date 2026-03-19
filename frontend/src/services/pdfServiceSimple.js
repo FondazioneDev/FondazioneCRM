@@ -237,7 +237,7 @@ export const generateInvoicePDF = (invoiceData, patientData) => {
   };
 };
 
-export const generateCreditNotePDF = (invoiceData, patientData) => {
+export const generateCreditNotePDF = (creditNoteData, invoiceData, patientData) => {
   // Crea nuovo documento PDF
   const doc = new jsPDF();
   const isStampDutyApplied =
@@ -249,12 +249,12 @@ export const generateCreditNotePDF = (invoiceData, patientData) => {
   doc.setFontSize(12);
   // Fattura numero e data (in alto a destra)
   const creditNoteNumber =
-    invoiceData.invoice_number + '/NC' ||
+    creditNoteData.credit_note_number ||
     `TEMP-${new Date().getFullYear()}-${String(
       Math.floor(Math.random() * 999) + 1
-    ).padStart(3, "0")}`;
+    ).padStart(3, "0")}/NC`;
 
-  const issueDate = new Date(invoiceData.issue_date).toLocaleDateString(
+  const issueDate = new Date(creditNoteData.created_at).toLocaleDateString(
     "it-IT"
   );
   const rightMargin = 190;
@@ -265,7 +265,7 @@ export const generateCreditNotePDF = (invoiceData, patientData) => {
   doc.text(`DATA EMISSIONE: ${issueDate}`, rightMargin, yPosition + 7, {
     align: "right",
   });
-  doc.text(`RELATIVA ALLA FATTURA: ${creditNoteNumber}`, rightMargin, yPosition + 14, {
+  doc.text(`RELATIVA ALLA FATTURA: ${invoiceData.invoice_number}`, rightMargin, yPosition + 14, {
     align: "right",
   });
 

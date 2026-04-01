@@ -167,14 +167,13 @@ class PatientValidationUtils {
   // Validate CAP (Italian postal code)
   static validateCAP(cap) {
     const errors = [];
-    
+
     if (cap && cap.trim() !== '') {
-      const capRegex = /^[0-9]{5}$/;
-      if (!capRegex.test(cap)) {
-        errors.push('Il CAP deve essere di 5 cifre');
+      if (cap.trim().length > 10) {
+        errors.push('Il CAP deve essere di massimo 10 caratteri');
       }
     }
-    
+
     return {
       isValid: errors.length === 0,
       errors

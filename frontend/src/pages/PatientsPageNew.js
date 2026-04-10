@@ -389,7 +389,7 @@ const PatientsPageNew = () => {
             justifyContent="space-between"
           >
             <TextField
-              placeholder="Cerca pazienti per nome, CF, email o telefono..."
+              placeholder="Cerca pazienti per nome, medico di riferimento, CF, email o telefono..."
               value={searchTerm}
               onChange={handleSearchChange}
               size="medium"

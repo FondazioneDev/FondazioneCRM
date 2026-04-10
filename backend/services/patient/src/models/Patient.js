@@ -178,10 +178,10 @@ class Patient {
   static async search(searchTerm, limit = 50, offset = 0, sortBy = 'created_at', sortOrder = 'DESC') {
     // Validate sortBy column to prevent SQL injection
     const validSortColumns = [
-      'nome', 'cognome', 'data_nascita', 'created_at', 'updated_at', 
+      'nome', 'cognome', 'data_nascita', 'created_at', 'updated_at',
       'sesso', 'citta', 'telefono', 'email', 'codice_fiscale'
     ];
-    
+
     const validSortBy = validSortColumns.includes(sortBy) ? sortBy : 'created_at';
     const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
 
@@ -189,12 +189,16 @@ class Patient {
       SELECT p.*, u.username as created_by_username
       FROM patient.patients p
       LEFT JOIN auth.users u ON p.created_by = u.id
+      LEFT JOIN auth.users mc ON p.medico_curante = mc.id
       WHERE (
-        p.nome ILIKE $1 OR 
-        p.cognome ILIKE $1 OR 
-        (p.codice_fiscale IS NOT NULL AND p.codice_fiscale ILIKE $1) OR 
-        p.email ILIKE $1 OR 
-        p.telefono ILIKE $1
+        p.nome ILIKE $1 OR
+        p.cognome ILIKE $1 OR
+        (p.codice_fiscale IS NOT NULL AND p.codice_fiscale ILIKE $1) OR
+        p.email ILIKE $1 OR
+        p.telefono ILIKE $1 OR
+        (mc.first_name IS NOT NULL AND mc.first_name ILIKE $1) OR
+        (mc.last_name IS NOT NULL AND mc.last_name ILIKE $1) OR
+        (mc.email IS NOT NULL AND mc.email ILIKE $1)
       )
       ORDER BY ${validSortBy} ${validSortOrder}
       LIMIT $2 OFFSET $3
@@ -208,13 +212,17 @@ class Patient {
   // Add the missing searchCount method
   static async searchCount(searchTerm) {
     const queryText = `
-      SELECT COUNT(*) FROM patient.patients
+      SELECT COUNT(*) FROM patient.patients p
+      LEFT JOIN auth.users mc ON p.medico_curante = mc.id
       WHERE (
-        nome ILIKE $1 OR 
-        cognome ILIKE $1 OR 
-        (codice_fiscale IS NOT NULL AND codice_fiscale ILIKE $1) OR 
-        email ILIKE $1 OR 
-        telefono ILIKE $1
+        p.nome ILIKE $1 OR
+        p.cognome ILIKE $1 OR
+        (p.codice_fiscale IS NOT NULL AND p.codice_fiscale ILIKE $1) OR
+        p.email ILIKE $1 OR
+        p.telefono ILIKE $1 OR
+        (mc.first_name IS NOT NULL AND mc.first_name ILIKE $1) OR
+        (mc.last_name IS NOT NULL AND mc.last_name ILIKE $1) OR
+        (mc.email IS NOT NULL AND mc.email ILIKE $1)
       )
     `;
 
